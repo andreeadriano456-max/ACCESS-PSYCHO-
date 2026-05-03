@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>System Locked</title>
+
+<style>
+body {
+    margin: 0;
+    background: black;
+    color: lime;
+    font-family: monospace;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* LOGIN */
+#login {
+    margin-top: 150px;
+    position: relative;
+    z-index: 2;
+}
+
+/* TERMINAL */
+#quiz {
+    display: none;
+    position: relative;
+    z-index: 2;
+}
+
+#terminal {
+    width: 70%;
+    max-width: 750px;
+    margin: 80px auto;
+    padding: 30px;
+    background: rgba(0,0,0,0.9);
+    border: 1px solid lime;
+    box-shadow: 0 0 20px lime;
+    border-radius: 10px;
+}
+
+/* INPUTS */
+input {
+    padding: 10px;
+    background: black;
+    color: lime;
+    border: 1px solid lime;
+    margin: 5px;
+    font-family: monospace;
+}
+
+/* BOTONES */
+button {
+    background: black;
+    color: lime;
+    border: 1px solid lime;
+    padding: 10px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: lime;
+    color: black;
+}
+
+/* MATRIX */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+</style>
+
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<!-- LOGIN -->
+<div id="login">
+    <h1>SYSTEM LOCKED</h1>
+    <input id="pass" type="password" placeholder="Contraseña...">
+    <br><br>
+    <button onclick="checkPass()">ENTRAR</button>
+    <p id="error" style="color:red;"></p>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz">
+    <div id="terminal">
+        <h2 id="pregunta"></h2>
+        <div id="opciones"></div>
+    </div>
+</div>
+
+<script>
+
+/* ================= MATRIX ================= */
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+const chars = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&@*+";
+const letters = chars.split("");
+
+let drops = Array(100).fill(1);
+
+function drawMatrix(){
+    ctx.fillStyle="rgba(0,0,0,0.08)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle="lime";
+    ctx.font="14px monospace";
+
+    for(let i=0;i<drops.length;i++){
+        let text = letters[Math.floor(Math.random()*letters.length)];
+        ctx.fillText(text,i*14,drops[i]*14);
+
+        if(drops[i]*14>canvas.height) drops[i]=0;
+        drops[i]++;
+    }
+}
+setInterval(drawMatrix,33);
+
+/* ================= LOGIN ================= */
+
+const PASSWORD = "x404";
+
+function checkPass(){
+    const input = document.getElementById("pass").value;
+
+    if(input === PASSWORD){
+        document.getElementById("login").style.display="none";
+        document.getElementById("quiz").style.display="block";
+        nivel=0;
+        cargar();
+    } else {
+        document.getElementById("error").innerText="ACCESO DENEGADO";
+    }
+}
+
+/* ================= JUEGO ================= */
+
+let nivel = 0;
+let userData = {};
+
+const preguntas = [
+    { type:"register" },
+
+    { type:"buttons", q:"¿Le tienes miedo a la muerte?", a:["SI","NO","NO LO SE"] },
+    { type:"buttons", q:"¿La vida tiene sentido?", a:["SI","NO","DEPENDE"] },
+    { type:"buttons", q:"¿Eres feliz?", a:["SI","NO","A VECES"] },
+    { type:"buttons", q:"¿Cambiarías tu pasado?", a:["SI","NO","NUNCA"] },
+    { type:"buttons", q:"¿Confías en ti mismo?", a:["SI","NO","A VECES"] },
+    { type:"buttons", q:"¿Qué es la realidad?", a:["ILUSIÓN","VERDAD","NO LO SE"] },
+    { type:"buttons", q:"¿El dolor enseña?", a:["SI","NO","DEPENDE"] },
+    { type:"buttons", q:"¿Eres libre?", a:["SI","NO","PARCIALMENTE"] },
+    { type:"buttons", q:"¿Qué queda al final?", a:["RECUERDOS","NADA","TODO"] }
+];
+
+function cargar(){
+
+    if(nivel>=preguntas.length){
+        finalizar();
+        return;
+    }
+
+    let p=preguntas[nivel];
+    let div=document.getElementById("opciones");
+    div.innerHTML="";
+
+    document.getElementById("pregunta").innerText=p.q;
+
+    /* REGISTRO */
+    if(p.type==="register"){
+
+        let n=document.createElement("input");
+        n.placeholder="Nombre";
+
+        let e=document.createElement("input");
+        e.placeholder="Edad";
+
+        let a=document.createElement("input");
+        a.placeholder="Apodo";
+
+        let b=document.createElement("button");
+        b.innerText="CONTINUAR";
+
+        b.onclick=()=>{
+            if(n.value && e.value && a.value){
+                userData={nombre:n.value,edad:e.value,apodo:a.value};
+                nivel++;
+                cargar();
+            }
+        };
+
+        div.appendChild(n);
+        div.appendChild(e);
+        div.appendChild(a);
+        div.appendChild(b);
+    }
+
+    /* BOTONES */
+    else{
+        p.a.forEach(op=>{
+            let btn=document.createElement("button");
+            btn.innerText=op;
+
+            btn.onclick=()=>{
+                nivel++;
+                cargar();
+            };
+
+            div.appendChild(btn);
+        });
+    }
+}
+
+/* ================= FINAL ================= */
+function finalizar(){
+    document.getElementById("terminal").innerHTML=`
+        <h1>INFORMACIÓN COMPLETADA</h1>
+        <p>${userData.nombre} (${userData.apodo})</p>
+        <p>Edad: ${userData.edad}</p>
+    `;
+}
+
+</script>
+
+</body>
+</html>
